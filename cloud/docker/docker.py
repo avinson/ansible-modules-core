@@ -109,6 +109,13 @@ options:
       - none
       - syslog
     version_added: "2.0"
+  log_opt:
+    description:
+      - List of config options for the log_driver such as:
+        syslog-address: udp://localhost:514
+        Requires docker >= 1.7.0.
+    required: false
+    default: null
   memory_limit:
     description:
       - RAM allocated to the container as a number of bytes or as a human-readable
@@ -274,7 +281,7 @@ options:
     default: false
     version_added: "1.9"
 
-author: 
+author:
     - "Cove Schneider (@cove)"
     - "Joshua Conner (@joshuaconner)"
     - "Pavel Antonov (@softzilla)"
@@ -530,6 +537,7 @@ class DockerManager(object):
             'extra_hosts': ((0, 7, 0), '1.3.1'),
             'pid': ((1, 0, 0), '1.17'),
             'log_driver': ((1, 2, 0), '1.18'),
+            'log_opt': ((1, 2, 0), '1.18'),
             'host_config': ((0, 7, 0), '1.15'),
             # Clientside only
             'insecure_registry': ((0, 5, 0), '0.0')
@@ -553,7 +561,7 @@ class DockerManager(object):
                 elif 2 <= len(parts) <= 3:
                     # default to read-write
                     ro = False
-                    # with supplied bind mode 
+                    # with supplied bind mode
                     if len(parts) == 3:
                         if parts[2] not in ['ro', 'rw']:
                             self.module.fail_json(msg='bind mode needs to either be "ro" or "rw"')
@@ -1301,7 +1309,7 @@ class DockerManager(object):
 
         optionals = {}
         for optional_param in ('dns', 'volumes_from', 'restart_policy',
-                'restart_policy_retry', 'pid', 'extra_hosts', 'log_driver'):
+                'restart_policy_retry', 'pid', 'extra_hosts', 'log_driver', 'log_opt'):
             optionals[optional_param] = self.module.params.get(optional_param)
 
         if optionals['dns'] is not None:
@@ -1332,7 +1340,7 @@ class DockerManager(object):
 
         if optionals['log_driver'] is not None:
             self.ensure_capability('log_driver')
-            log_config = docker.utils.LogConfig(type=docker.utils.LogConfig.types.JSON)
+            log_config = docker.utils.LogConfig(type=docker.utils.LogConfig.types.JSON, config=optionals['log_opt'])
             log_config.type = optionals['log_driver']
             params['log_config'] = log_config
 
@@ -1583,6 +1591,7 @@ def main():
             pid             = dict(default=None),
             insecure_registry = dict(default=False, type='bool'),
             log_driver      = dict(default=None, choices=['json-file', 'none', 'syslog']),
+            log_opt         = dict(default=None),
         ),
         required_together = (
             ['tls_client_cert', 'tls_client_key'],

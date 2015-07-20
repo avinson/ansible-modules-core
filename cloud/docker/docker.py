@@ -281,7 +281,7 @@ options:
     default: false
     version_added: "1.9"
 
-author:
+author: 
     - "Cove Schneider (@cove)"
     - "Joshua Conner (@joshuaconner)"
     - "Pavel Antonov (@softzilla)"
@@ -561,7 +561,7 @@ class DockerManager(object):
                 elif 2 <= len(parts) <= 3:
                     # default to read-write
                     ro = False
-                    # with supplied bind mode
+                    # with supplied bind mode 
                     if len(parts) == 3:
                         if parts[2] not in ['ro', 'rw']:
                             self.module.fail_json(msg='bind mode needs to either be "ro" or "rw"')
